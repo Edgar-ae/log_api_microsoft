@@ -13,4 +13,5 @@ def products(request):
 
 def exit(request):
     logout(request)
+    print("Hola")
     return redirect('n_home')

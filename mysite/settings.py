@@ -15,6 +15,10 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -38,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'myapp',
+    'django_auth_adfs',
 ]
 
 MIDDLEWARE = [
@@ -48,6 +53,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # You can specify URLs for which login is not enforced by
+    # specifying them in the LOGIN_EXEMPT_URLS setting.
+    # 'django_auth_adfs.middleware.LoginRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'mysite.urls'
@@ -125,5 +133,43 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # VARIABLES DE REDIRECCIÓN DE LOGIN Y LOGOUT
-LOGIN_REDIRECT_URL = 'n_home'
-LOGOUT_REDIRECT_URL = 'n_home'
+LOGIN_REDIRECT_URL = 'http://localhost:8000/'
+# LOGOUT_REDIRECT_URL = 'n_home'
+
+#SETTINGS FOR LOGIN WITH MICRFOSOFT
+
+AUTHENTICATION_BACKENDS = (
+    'django_auth_adfs.backend.AdfsAuthCodeBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+# Configure django to redirect users to the right URL for login
+LOGIN_URL = "django_auth_adfs:login"
+LOGIN_REDIRECT_URL = "/"
+
+# Client secret is not public information. Should store it as an environment variable.
+client_id = os.getenv("client_id")
+client_secret = os.getenv("client_secret")
+tenant_id = os.getenv("tenant_id")
+
+
+
+AUTH_ADFS = {
+    'AUDIENCE': client_id,
+    'CLIENT_ID': client_id,
+    'CLIENT_SECRET': client_secret,
+    'CLAIM_MAPPING': {'first_name': 'given_name',
+                      'last_name': 'family_name',
+                      'email': 'upn'},
+    'GROUPS_CLAIM': 'roles',
+    'MIRROR_GROUPS': True,
+    'USERNAME_CLAIM': 'upn',
+    'TENANT_ID': tenant_id,
+    'RELYING_PARTY_ID': client_id,
+}
+
+# CON LOS PRINTS COMPROBAREMOS SI LAS VARIABLES CONTIENEN ALGO
+print("260 IQ")
+print(client_secret)
+
+# SECURE_SSL_REDIRECT = False
